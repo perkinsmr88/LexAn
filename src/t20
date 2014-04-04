@@ -1,0 +1,9 @@
+/* bad _t20 */
+int main(void)
+{
+
+    int x;
+
+    x = ;
+
+}

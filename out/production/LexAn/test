@@ -1,0 +1,31 @@
+/*this is a multiline comment
+
+    /*Line 2
+        /*Line 3
+        */
+        */
+
+*/
+
+//hgjhkghjghjghjghjkg
+
+int main(void)
+{
+    float q;
+    int counter;
+
+    q = 45.25E-10;
+    counter = 0;
+
+  while(counter < 10)
+  {
+    counter + 1;
+  }
+
+  if(counter == 2)
+  {
+    counter-1;
+  }
+
+  return 0;
+}

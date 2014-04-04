@@ -1,0 +1,32 @@
+/**************/
+/*************************
+i = 333;        ******************/       */
+//Testing single line commment
+iiii = 3@33;
+i = 6.89;
+i = 9.89E1;
+int g 4 cd (int u, int v)      {
+if(v == >= 0) return/*a comment*/ u;
+else ret_urn gcd(vxxxxxxvvvvv, u-u/v*v);
+       /* u-u/v*v == u mod v*/
+!   
+}
+
+    int f   = 0;
+    if(f!=0){
+        i=8.99E-1;
+        f=99E+51;
+    }
+
+return void while       void main()4
+//Stupid nested comment shit
+/*df
+    /*ufbds*/
+    /*casgg
+        /*snbrk*/
+    */this
+*/
+
+*/
+
+/* Testing error
