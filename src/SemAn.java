@@ -42,9 +42,6 @@ public class SemAn
 
     public void declaration(ArrayDeque<imAtoken> x)
     {
-
-        //look for function declarations starting here
-
         if(!x.isEmpty())
         {
             typeSpec(x);
@@ -113,6 +110,8 @@ public class SemAn
     {
         //decfollow -> (params) compound | X
 
+        boolean duplicate = true;
+
         if(!x.isEmpty())
         {
             imAtoken token = x.peek();
@@ -129,8 +128,26 @@ public class SemAn
 
                     if(token.name.equals(")"))
                     {
-                        //Send function to Function list
-                        functionList.add(func);
+                        //check for duplicate function
+                        for(int t = 0; t <= (functionList.size()-1); t++)
+                        {
+                            if(func.name.equals(functionList.get(t).name))
+                            {
+                                for(int s = 0; s < (functionList.get(s).pType.size()-1); s++)
+                                {
+                                    if(!func.pType.get(s).equals(functionList.get(s).pType.get(s)))
+                                    {
+                                        duplicate = false;
+                                    }
+                                }
+                            }
+                        }
+
+                        if(!duplicate)
+                        {
+                            //Send function to Function list
+                            functionList.add(func);
+                        }
 
                         //remove end token
                         x.pop();
@@ -200,6 +217,10 @@ public class SemAn
             {
                 if(token.name.equals("void"))
                 {
+                    //capture parameter type
+                    func.loadpType(token.name);
+                    func.loadpName("");
+                    //remove token
                     x.pop();
 
                     parameter(x);
@@ -286,15 +307,15 @@ public class SemAn
 
                     NUM(x);
 
-                    imAtoken token2 = x.peek();
+                    token = x.peek();
 
-                    if(token2.name.equals("]"))
+                    if(token.name.equals("]"))
                     {
                         x.pop();
 
-                        imAtoken token3 = x.peek();
+                        token = x.peek();
 
-                        if(token3.name.equals(";"))
+                        if(token.name.equals(";"))
                         {
                             x.pop();
                         }

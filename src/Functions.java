@@ -1,4 +1,4 @@
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 /**
  * Created by Drivenwanderer on 4/2/14.
@@ -7,13 +7,14 @@ public class Functions
 {
     String name;
     String type;
-    int index;
-    ArrayDeque<String> pType = new ArrayDeque<String>();
-    ArrayDeque<String> pName = new ArrayDeque<String>();
+    String rType;
+    ArrayList<Boolean> isArray = new ArrayList<Boolean>();
+    ArrayList<String> pType = new ArrayList<String>();
+    ArrayList<String> pName = new ArrayList<String>();
 
     public Functions()
     {
-        //create an empty one
+        /* create an empty one */
     }
 
     public void loadName(String x)
@@ -26,9 +27,9 @@ public class Functions
         type = x;
     }
 
-    public void loadIndex(int x)
+    public void loadIndex(boolean x)
     {
-        index = x;
+        isArray.add(x);
     }
 
     public void loadpType(String x)
@@ -39,5 +40,10 @@ public class Functions
     public void loadpName(String x)
     {
         pName.add(x);
+    }
+
+    public void loadrType(String x)
+    {
+        rType = x;
     }
 }

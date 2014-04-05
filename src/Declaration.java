@@ -6,7 +6,7 @@ public class Declaration
    String ID;
    String type;
    int arraySize;
-   boolean flag;
+   boolean Array;
 
     public Declaration()
     {
@@ -30,7 +30,7 @@ public class Declaration
 
     public void setFlag(boolean f)
     {
-        flag = f;
+        Array = f;
     }
 
 

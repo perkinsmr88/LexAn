@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 public class Parser
 {
-    ArrayDeque<Declaration> decList = new ArrayDeque<Declaration>();
+    ArrayList<SymTable> decList = new ArrayList<SymTable>();
+    SymTable symTab = new SymTable();
     Declaration dec = new Declaration();
 
 //---------------------------------------------------------------------------------------------------------------
@@ -43,10 +44,7 @@ public class Parser
 //---------------------------------------------------------------------------------------------------------------
 
     public void declaration(ArrayDeque<imAtoken> x)
-    {
-
-        //look for function declarations starting here
-
+    {       
         if(!x.isEmpty())
         {
             typeSpec(x);
@@ -128,9 +126,9 @@ public class Parser
 
                 if(!x.isEmpty())
                 {
-                    imAtoken token2 = x.peek();
+                    token = x.peek();
 
-                    if(token2.name.equals(")"))
+                    if(token.name.equals(")"))
                     {
                         x.pop();
 
@@ -260,15 +258,32 @@ public class Parser
     {
         //X-> ; | [NUM] ;
 
+        boolean duplicate = true;
+
         if(!x.isEmpty())
         {
-
             imAtoken token = x.peek();
 
             if(token.name.equals(";"))
             {
-                //add declaration to list
-                decList.add(dec);
+                //check for duplicate variable
+                for(int t = 0; t < symTab.stacker.size()-1; t++)
+                {
+                    if(dec.ID.equals(symTab.lookUp(t).ID))
+                    {
+                        duplicate = false;
+                    }
+                }
+
+                if(!duplicate)
+                {
+                    //add declaration to table
+                    symTab.insert(dec);
+                }
+                else
+                {
+                    System.out.println("Error:" + dec.ID + " already declared in this scope");
+                }
 
                 //remove token
                 x.pop();
@@ -281,32 +296,59 @@ public class Parser
 
                     NUM(x);
 
-                    imAtoken token2 = x.peek();
-
-                    if(token2.name.equals("]"))
+                    if(!x.isEmpty())
                     {
-                        x.pop();
+                        token = x.peek();
 
-                        imAtoken token3 = x.peek();
-
-                        if(token3.name.equals(";"))
+                        if (token.name.equals("]"))
                         {
-                            //add dec to list
-                            decList.add(dec);
-
-                            //remove token
                             x.pop();
+
+                            if (!x.isEmpty()) {
+
+                                token = x.peek();
+
+                                if (token.name.equals(";"))
+                                {
+                                    //check for duplicate variable
+                                    for(int t = 0; t < symTab.stacker.size()-1; t++)
+                                    {
+                                        if(dec.ID.equals(symTab.lookUp(t).ID))
+                                        {
+                                            duplicate = false;
+                                        }
+                                    }
+
+                                    if(!duplicate)
+                                    {
+                                        //add dec to table
+                                        symTab.insert(dec);
+                                    }
+                                    else
+                                    {
+                                        System.out.println("Error:" + dec.ID + " already declared in this scope");
+                                    }
+
+                                    //remove token
+                                    x.pop();
+
+                                }
+                                else
+                                {
+                                    System.out.println("Error7: expected \";\" but found " + token.name + " on line " + token.line);
+                                    System.exit(0);
+                                }
+                            }
+                            else
+                            {
+                                System.out.println("Error: Out of Tokens");
+                            }
                         }
                         else
                         {
-                            System.out.println("Error7: expected \";\" but found " + token.name + " on line "  + token.line);
+                            System.out.println("Error8: expected \"]\" but found " + token.name + " on line " + token.line);
                             System.exit(0);
                         }
-                    }
-                    else
-                    {
-                        System.out.println("Error8: expected \"]\" but found " + token.name + " on line "  + token.line);
-                        System.exit(0);
                     }
                 }
                 else

@@ -11,6 +11,7 @@ b=b/2;
 while (b==3)
 {
 int x;
+int x;
 x=q+2;
 }
 if (c==b)

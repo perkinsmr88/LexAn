@@ -1,37 +1,39 @@
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 /**
  * Created by Drivenwanderer on 4/2/14.
  */
 public class SymTable
 {
-    String rType;
-    ArrayDeque<Declaration> stacker = new ArrayDeque<Declaration>();
+
+    ArrayList<Declaration> stacker = new ArrayList<Declaration>();
 
     //--------------------------------------------------------------------------------------------------
 
-    public SymTable (String x)
+    public SymTable ()
     {
-        rType = x;
+      //blank slate
     }
 
     //--------------------------------------------------------------------------------------------------
 
-    private void lookUp()
+    public Declaration lookUp(int x)
     {
+       Declaration dec = stacker.get(x);
 
+        return dec;
     }
 
     //--------------------------------------------------------------------------------------------------
 
-    private void insert()
+    public void insert(Declaration x)
     {
-
+        stacker.add(x);
     }
 
     //--------------------------------------------------------------------------------------------------
 
-    private void delete()
+    public void delete()
     {
 
     }

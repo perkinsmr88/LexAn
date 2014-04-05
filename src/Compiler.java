@@ -14,7 +14,8 @@ public class Compiler
 {
     public static void main(String[] args)
     {
-        ArrayDeque<imAtoken> parseMe = new ArrayDeque();// collection of analyzed pieces to be parsed
+        ArrayDeque<imAtoken> parseMe = new ArrayDeque<imAtoken>();// collection of analyzed pieces to be parsed
+        ArrayDeque<imAtoken> semAnMe = new ArrayDeque<imAtoken>(); //duplicate stack for func decs
         ArrayList<Functions> functionList = new ArrayList<Functions>();
         String conti   = ""; //Can it be parsed?
         int[] x = new int[10];
@@ -22,9 +23,12 @@ public class Compiler
         Lex lex = new Lex(); //Lexical Analyzer creation
         parseMe = lex.run(args); //Create the string from the lexical analyzer
 
+        //duplicate stack----------------------------------------------
+        semAnMe = parseMe.clone();
+
         //Prepare the Function Declaration Table-------------------------
         SemAn semAn = new SemAn();
-        functionList = semAn.run(parseMe);
+        functionList = semAn.run(semAnMe);
 
         //Call the Parser------------------------------------------------
 

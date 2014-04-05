@@ -23,7 +23,7 @@ public class Lex
     public ArrayDeque<imAtoken> run(String[] args)
     {
 
-        File file = new File("C:\\Users\\Drivenwanderer\\Desktop\\LexAn\\src\\t1");
+        File file = new File("C:\\Users\\g00002046\\Documents\\GitHub\\LexAn\\src\\t1");
 
         try
         {
