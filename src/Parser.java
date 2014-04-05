@@ -4,13 +4,16 @@
  */
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 public class Parser
 {
+    ArrayDeque<Declaration> decList = new ArrayDeque<Declaration>();
+    Declaration dec = new Declaration();
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public String run(ArrayDeque<imAtoken> x, String conti)
+    public String run(ArrayDeque<imAtoken> x, ArrayList<Functions> y, String conti)
     {
         while(!x.isEmpty())
         {
@@ -52,6 +55,10 @@ public class Parser
 
             if(token.type.equals("ID"))
             {
+                //Capture declaration ID
+                dec.fillID(token.name);
+
+                //remove token
                 x.pop();
             }
             else
@@ -89,6 +96,10 @@ public class Parser
 
       if( token.name.equals("int") || token.name.equals("void") || token.name.equals("float") )
       {
+          //capture declaration type
+          dec.fillType(token.name);
+
+          //remove token
           x.pop();
       }
       else
@@ -256,6 +267,10 @@ public class Parser
 
             if(token.name.equals(";"))
             {
+                //add declaration to list
+                decList.add(dec);
+
+                //remove token
                 x.pop();
             }
             else
@@ -276,6 +291,10 @@ public class Parser
 
                         if(token3.name.equals(";"))
                         {
+                            //add dec to list
+                            decList.add(dec);
+
+                            //remove token
                             x.pop();
                         }
                         else
@@ -309,11 +328,14 @@ public class Parser
     {
         if(!x.isEmpty())
         {
-
             imAtoken token = x.peek();
 
              if(token.type.equals("Float") ||  token.type.equals("Int"))
              {
+                 //capture length of array
+                 dec.fillSize(Integer.parseInt(token.name));
+
+                 //remove token
                  x.pop();
              }
             else
@@ -340,12 +362,11 @@ public class Parser
 
             if(token.name.equals("int") || token.name.equals("void") || token.name.equals("float"))
             {
-
                 typeSpec(x);
 
-                imAtoken token2 = x.peek();
+                token = x.peek();
 
-                if(token2.type.equals( "ID"))
+                if(token.type.equals( "ID"))
                 {
                     x.pop();
 

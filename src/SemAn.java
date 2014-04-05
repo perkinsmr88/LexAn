@@ -1,22 +1,26 @@
+import org.omg.DynamicAny._DynArrayStub;
+
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 /**
  * Created by michaelperkins on 4/4/14.
  */
 public class SemAn
 {
-    Functions funcDecs = new Functions();
+    ArrayList<Functions> functionList = new ArrayList<Functions>();
+    Functions func = new Functions();
 
     //---------------------------------------------------------------------------------------------------------------
 
-    public Functions run(ArrayDeque<imAtoken> x)
+    public ArrayList<Functions> run(ArrayDeque<imAtoken> x)
     {
         while(!x.isEmpty())
         {
             program(x);
         }
 
-        return funcDecs;
+        return functionList;
     }
 
 //---------------------------------------------------------------------------------------------------------------
@@ -49,6 +53,10 @@ public class SemAn
 
             if(token.type.equals("ID"))
             {
+                //Capture the declarations ID
+                func.loadName(token.name);
+
+                //Remove the token
                 x.pop();
             }
             else
@@ -86,6 +94,10 @@ public class SemAn
 
         if( token.name.equals("int") || token.name.equals("void") || token.name.equals("float") )
         {
+            //Capture the declarations type
+           func.loadType(token.name);
+
+            //Remove the token from the stack
             x.pop();
         }
         else
@@ -103,7 +115,6 @@ public class SemAn
 
         if(!x.isEmpty())
         {
-
             imAtoken token = x.peek();
 
             if(token.name.equals("("))
@@ -114,10 +125,14 @@ public class SemAn
 
                 if(!x.isEmpty())
                 {
-                    imAtoken token2 = x.peek();
+                    token = x.peek();
 
-                    if(token2.name.equals(")"))
+                    if(token.name.equals(")"))
                     {
+                        //Send function to Function list
+                        functionList.add(func);
+
+                        //remove end token
                         x.pop();
 
                         compound(x);
@@ -152,14 +167,22 @@ public class SemAn
 
             if(token.name.equals("int") || token.name.equals("float"))
             {
+                //capture parameter type
+                func.loadpType(token.name);
+
+                //remove the token
                 x.pop();
 
                 if(!x.isEmpty())
                 {
-                    imAtoken token2 = x.peek();
+                    token = x.peek();
 
-                    if(token2.type.equals("ID"))
+                    if(token.type.equals("ID"))
                     {
+                        //capture param name
+                        func.loadpName(token.name);
+
+                        //remove the token
                         x.pop();
 
                         paramType(x);

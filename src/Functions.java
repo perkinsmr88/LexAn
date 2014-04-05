@@ -11,10 +11,33 @@ public class Functions
     ArrayDeque<String> pType = new ArrayDeque<String>();
     ArrayDeque<String> pName = new ArrayDeque<String>();
 
-    public Functions(String x, String y, int z)
+    public Functions()
     {
-        name  = x;
-        type  = y;
-        index = z;
+        //create an empty one
+    }
+
+    public void loadName(String x)
+    {
+        name = x;
+    }
+
+    public void loadType(String x)
+    {
+        type = x;
+    }
+
+    public void loadIndex(int x)
+    {
+        index = x;
+    }
+
+    public void loadpType(String x)
+    {
+        pType.add(x);
+    }
+
+    public void loadpName(String x)
+    {
+        pName.add(x);
     }
 }

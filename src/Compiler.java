@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 
 /**
@@ -14,15 +15,21 @@ public class Compiler
     public static void main(String[] args)
     {
         ArrayDeque<imAtoken> parseMe = new ArrayDeque();// collection of analyzed pieces to be parsed
+        ArrayList<Functions> functionList = new ArrayList<Functions>();
         String conti   = ""; //Can it be parsed?
+        int[] x = new int[10];
 
         Lex lex = new Lex(); //Lexical Analyzer creation
         parseMe = lex.run(args); //Create the string from the lexical analyzer
 
-        //Call the Parser-------------------------------------------
+        //Prepare the Function Declaration Table-------------------------
+        SemAn semAn = new SemAn();
+        functionList = semAn.run(parseMe);
+
+        //Call the Parser------------------------------------------------
 
         Parser parser = new Parser();  //Parser creation
-        conti = parser.run(parseMe, conti);   //run through parser
+        conti = parser.run(parseMe, functionList, conti);   //run through parser
 
         //Print Successful Result-----------------------------------------
 

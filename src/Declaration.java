@@ -8,11 +8,30 @@ public class Declaration
    int arraySize;
    boolean flag;
 
-    public Declaration(String x, String y, int z, boolean f)
+    public Declaration()
     {
-        ID        = x;
-        type      = y;
-        arraySize = z;
-        flag      = f;
+        //create a blank slate
     }
+
+    public void fillID(String x)
+    {
+        ID = x;
+    }
+
+    public void fillType(String y)
+    {
+        type = y;
+    }
+
+    public void fillSize(int z)
+    {
+        arraySize = z;
+    }
+
+    public void setFlag(boolean f)
+    {
+        flag = f;
+    }
+
+
 }
