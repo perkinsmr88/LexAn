@@ -3,14 +3,11 @@ int q;
 void monkey(void)
 {
 int q;
-void a[4];
 int b;
-void c;
 
 b=b/2;
 while (b==3)
 {
-int x;
 int x;
 x=q+2;
 }
@@ -22,8 +19,6 @@ c=car(4);
 }
 
 }
-
-int d;
 
 int car(int j)
 {

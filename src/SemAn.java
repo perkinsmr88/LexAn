@@ -9,7 +9,10 @@ import java.util.ArrayList;
 public class SemAn
 {
     ArrayList<Functions> functionList = new ArrayList<Functions>();
-    Functions func = new Functions();
+    String name = "";
+    String type = "";
+    ArrayList<String> ptype = new ArrayList<String>();
+    ArrayList<String> pname = new ArrayList<String>();
 
     //---------------------------------------------------------------------------------------------------------------
 
@@ -51,7 +54,7 @@ public class SemAn
             if(token.type.equals("ID"))
             {
                 //Capture the declarations ID
-                func.loadName(token.name);
+                name = token.name;
 
                 //Remove the token
                 x.pop();
@@ -92,7 +95,7 @@ public class SemAn
         if( token.name.equals("int") || token.name.equals("void") || token.name.equals("float") )
         {
             //Capture the declarations type
-           func.loadType(token.name);
+           type = token.name;
 
             //Remove the token from the stack
             x.pop();
@@ -128,25 +131,45 @@ public class SemAn
 
                     if(token.name.equals(")"))
                     {
-                        //check for duplicate function
-                        for(int t = 0; t <= (functionList.size()-1); t++)
+                        if(functionList.size() != 0)
                         {
-                            if(func.name.equals(functionList.get(t).name))
+                            //check for duplicate function
+                            for(int t = 0; t <= (functionList.size()-1); t++)
                             {
-                                for(int s = 0; s < (functionList.get(s).pType.size()-1); s++)
+                                if(name.equals(functionList.get(t).name))
                                 {
-                                    if(!func.pType.get(s).equals(functionList.get(s).pType.get(s)))
+                                    for(int s = 0; s < (functionList.get(s).pType.size()-1); s++)
                                     {
-                                        duplicate = false;
+                                        if(!ptype.get(s).equals(functionList.get(s).pType.get(s)))
+                                        {
+                                            duplicate = false;
+                                        }
                                     }
                                 }
+                                else if (t == functionList.size()-1)
+                                {
+                                    duplicate = false;
+                                }
                             }
+                        }
+                        else
+                        {
+                            duplicate = false;
                         }
 
                         if(!duplicate)
                         {
+                            //create a Function
+                            Functions func = new Functions(name, type, ptype, pname, false);
+
                             //Send function to Function list
                             functionList.add(func);
+                            System.out.println("function " + type + " " + name + " found");
+                        }
+                        else
+                        {
+                            System.out.println("error function " + type + " " + name + " already defined");
+                            System.exit(0);
                         }
 
                         //remove end token
@@ -185,7 +208,7 @@ public class SemAn
             if(token.name.equals("int") || token.name.equals("float"))
             {
                 //capture parameter type
-                func.loadpType(token.name);
+                ptype.add(token.name);
 
                 //remove the token
                 x.pop();
@@ -197,7 +220,7 @@ public class SemAn
                     if(token.type.equals("ID"))
                     {
                         //capture param name
-                        func.loadpName(token.name);
+                        pname.add(token.name);
 
                         //remove the token
                         x.pop();
@@ -218,8 +241,9 @@ public class SemAn
                 if(token.name.equals("void"))
                 {
                     //capture parameter type
-                    func.loadpType(token.name);
-                    func.loadpName("");
+                    ptype.add(token.name);
+                    pname.add("");
+
                     //remove token
                     x.pop();
 
@@ -384,9 +408,9 @@ public class SemAn
 
                 typeSpec(x);
 
-                imAtoken token2 = x.peek();
+                token = x.peek();
 
-                if(token2.type.equals( "ID"))
+                if(token.type.equals( "ID"))
                 {
                     x.pop();
 

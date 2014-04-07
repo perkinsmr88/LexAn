@@ -3,14 +3,22 @@
  * Parser Class
  */
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 public class Parser
 {
     ArrayList<SymTable> decList = new ArrayList<SymTable>();
-    SymTable symTab = new SymTable();
-    Declaration dec = new Declaration();
+    ArrayList<String> ptype = new ArrayList<String>();
+    String ID;
+    String type;
+    int arraySize;
+    boolean Array;
+    String FunName;
+    String FunType;
+
 
 //---------------------------------------------------------------------------------------------------------------
 
@@ -18,7 +26,11 @@ public class Parser
     {
         while(!x.isEmpty())
         {
-            program(x);
+            //create global variable list
+            SymTable symtab = new SymTable();
+            decList.add(symtab);
+
+            program(x,y);
         }
 
         conti = "The code can be parsed";
@@ -28,33 +40,33 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void program(ArrayDeque<imAtoken> x)
+    public void program(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
-        declist(x);
+        declist(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void declist(ArrayDeque<imAtoken> x)
+    public void declist(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
-        declaration(x);
-        decloop(x);
+        declaration(x,y);
+        decloop(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void declaration(ArrayDeque<imAtoken> x)
+    public void declaration(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {       
         if(!x.isEmpty())
         {
-            typeSpec(x);
+            typeSpec(x,y);
 
             imAtoken token = x.peek();
 
             if(token.type.equals("ID"))
             {
                 //Capture declaration ID
-                dec.fillID(token.name);
+                ID = token.name;
 
                 //remove token
                 x.pop();
@@ -65,14 +77,14 @@ public class Parser
                 System.exit(0);
             }
 
-            decFollow(x);
+            decFollow(x,y);
         }
 
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void decloop(ArrayDeque<imAtoken> x)
+    public void decloop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         if(!x.isEmpty())
         {
@@ -80,22 +92,22 @@ public class Parser
 
             if( token.name.equals("int") || token.name.equals("void") || token.name.equals("float") )
             {
-                declaration(x);
-                decloop(x);
+                declaration(x,y);
+                decloop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void typeSpec(ArrayDeque<imAtoken> x)
+    public void typeSpec(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         imAtoken token = x.peek();
 
       if( token.name.equals("int") || token.name.equals("void") || token.name.equals("float") )
       {
           //capture declaration type
-          dec.fillType(token.name);
+          type = token.name;
 
           //remove token
           x.pop();
@@ -109,7 +121,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void decFollow(ArrayDeque<imAtoken> x)
+    public void decFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //decfollow -> (params) compound | X
 
@@ -122,7 +134,7 @@ public class Parser
             {
                 x.pop();
 
-                params(x);
+                params(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -132,13 +144,13 @@ public class Parser
                     {
                         x.pop();
 
-                        compound(x);
+                        compound(x,y);
                     }
                 }
             }
             else if(token.name.equals(";") || token.name.equals("["))
             {
-                X(x);
+                X(x,y);
             }
             else
             {
@@ -154,7 +166,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void params(ArrayDeque<imAtoken> x)
+    public void params(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //params-> int ID paramtype parLoop | float ID paramtype parLoop | void parameter
 
@@ -168,15 +180,15 @@ public class Parser
 
                 if(!x.isEmpty())
                 {
-                    imAtoken token2 = x.peek();
+                    token = x.peek();
 
-                    if(token2.type.equals("ID"))
+                    if(token.type.equals("ID"))
                     {
                         x.pop();
 
-                        paramType(x);
+                        paramType(x,y);
 
-                        parLoop(x);
+                        parLoop(x,y);
                     }
                 }
                 else
@@ -191,7 +203,7 @@ public class Parser
                 {
                     x.pop();
 
-                    parameter(x);
+                    parameter(x,y);
                 }
                 else
                 {
@@ -204,7 +216,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void compound(ArrayDeque<imAtoken> x)
+    public void compound(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //compound-> { localDecs statementList }
         if(!x.isEmpty())
@@ -213,11 +225,18 @@ public class Parser
 
             if(token.name.equals("{"))
             {
+                //create a new symbol table
+                SymTable symTab = new SymTable();
+
+                //add table to List
+                decList.add(symTab);
+
+                //remove token
                 x.pop();
 
-                localDecs(x);
+                localDecs(x,y);
 
-                statementList(x);
+                statementList(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -225,6 +244,10 @@ public class Parser
 
                     if(token.name.equals("}"))
                     {
+                        //drop current scope
+                        decList.remove(decList.size()-1);
+
+                        //remove token
                         x.pop();
                     }
                     else
@@ -254,7 +277,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void X(ArrayDeque<imAtoken> x)
+    public void X(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //X-> ; | [NUM] ;
 
@@ -266,23 +289,35 @@ public class Parser
 
             if(token.name.equals(";"))
             {
-                //check for duplicate variable
-                for(int t = 0; t < symTab.stacker.size()-1; t++)
+                if(decList.get(decList.size()-1).stacker.size() != 0)
                 {
-                    if(dec.ID.equals(symTab.lookUp(t).ID))
+                    //check for duplicate variable
+                    for(int t = 0; t <= decList.get(decList.size()-1).stacker.size()-1; t++)
                     {
-                        duplicate = false;
+                        if(!ID.equals(decList.get(decList.size()-1).lookUp(t).ID))
+                        {
+                            duplicate = false;
+                        }
+
                     }
+                }
+                else
+                {
+                    duplicate = false;
                 }
 
                 if(!duplicate)
                 {
+                    Declaration dec = new Declaration(ID, type, arraySize, Array);
+
                     //add declaration to table
-                    symTab.insert(dec);
+                    decList.get(decList.size()-1).insert(dec);
+                    System.out.println(dec.type + " " + dec.ID + " found");
                 }
                 else
                 {
-                    System.out.println("Error:" + dec.ID + " already declared in this scope");
+                    System.out.println("Error1:" + ID + " already declared in this scope");
+                    System.exit(0);
                 }
 
                 //remove token
@@ -294,7 +329,7 @@ public class Parser
                 {
                     x.pop();
 
-                    NUM(x);
+                    NUM(x,y);
 
                     if(!x.isEmpty())
                     {
@@ -310,23 +345,38 @@ public class Parser
 
                                 if (token.name.equals(";"))
                                 {
-                                    //check for duplicate variable
-                                    for(int t = 0; t < symTab.stacker.size()-1; t++)
+                                    if(((decList.get(decList.size()-1).stacker.size()))!= 0)
                                     {
-                                        if(dec.ID.equals(symTab.lookUp(t).ID))
+                                        //check for duplicate variable
+                                        for(int t = 0; t <= decList.get(decList.size()-1).stacker.size()-1; t++)
                                         {
-                                            duplicate = false;
+                                            if(!ID.equals(decList.get(decList.size()-1).lookUp(t).ID))
+                                            {
+                                                duplicate = false;
+                                            }
+                                            else if(t == decList.get(decList.size()-1).stacker.size()-1 )
+                                            {
+                                                duplicate = false;
+                                            }
                                         }
+                                    }
+                                    else
+                                    {
+                                        duplicate = false;
                                     }
 
                                     if(!duplicate)
                                     {
+                                        Declaration dec = new Declaration(ID, type, arraySize, Array);
+
                                         //add dec to table
-                                        symTab.insert(dec);
+                                        decList.get(decList.size()-1).insert(dec);
+                                        System.out.println(dec.type + "[] " + dec.ID + " found");
                                     }
                                     else
                                     {
-                                        System.out.println("Error:" + dec.ID + " already declared in this scope");
+                                        System.out.println("Error2:" + ID + " already declared in this scope");
+                                        System.exit(0);
                                     }
 
                                     //remove token
@@ -366,17 +416,20 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void NUM(ArrayDeque<imAtoken> x)
+    public void NUM(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         if(!x.isEmpty())
         {
             imAtoken token = x.peek();
-
+            
+            Array = false;
+            
              if(token.type.equals("Float") ||  token.type.equals("Int"))
              {
                  //capture length of array
-                 dec.fillSize(Integer.parseInt(token.name));
-
+                 arraySize = Integer.parseInt(token.name);
+                 Array = true;
+                 
                  //remove token
                  x.pop();
              }
@@ -394,7 +447,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void localDecs(ArrayDeque<imAtoken> x)
+    public void localDecs(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //localDecs-> typeSpec ID X localDecs | empty
 
@@ -404,17 +457,29 @@ public class Parser
 
             if(token.name.equals("int") || token.name.equals("void") || token.name.equals("float"))
             {
-                typeSpec(x);
+                typeSpec(x,y);
 
                 token = x.peek();
 
                 if(token.type.equals( "ID"))
                 {
+                    if(type.equals("void"))
+                    {
+                        System.out.println("Error: variables can not be of type void");
+                        System.exit(0);
+                    }
+                    else
+                    {
+                        //capture the ID
+                        ID = token.name;
+                    }
+
+                    //remove the token
                     x.pop();
 
-                    X(x);
+                     X(x,y);
 
-                    localDecs(x);
+                    localDecs(x,y);
                 }
                 else
                 {
@@ -427,7 +492,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void statementList(ArrayDeque<imAtoken> x)
+    public void statementList(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //statementList-> statement statementList | empty
         if(!x.isEmpty())
@@ -436,16 +501,16 @@ public class Parser
 
             if(token.name.equals("{") || token.name.equals("(") || token.name.equals("if") || token.name.equals("while") || token.name.equals("return") || token.type.equals("ID") || token.type.equals("Int") || token.type.equals("Float") || token.name.equals(";"))
             {
-                statement(x);
+                statement(x,y);
 
-                statementList(x);
+                statementList(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void statement(ArrayDeque<imAtoken> x)
+    public void statement(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //statement-> expressionSt | compound | selectionSt | iterationSt | returns
                     // ( || { || if || while || return
@@ -456,34 +521,34 @@ public class Parser
 
             if (token.name.equals("(") || token.type.equals("Int") || token.type.equals("Float") || token.type.equals("ID") || token.type.equals(";"))
             {
-                expressionSt(x);
+                expressionSt(x,y);
             }
             else if (token.name.equals("{"))
             {
-                compound(x);
+                compound(x,y);
             }
             else if (token.name.equals("if"))
             {
-                selectionSt(x);
+                selectionSt(x,y);
             }
             else if (token.name.equals("while"))
             {
-                iterationSt(x);
+                iterationSt(x,y);
             }
             else if (token.name.equals("return"))
             {
-                returnSt(x);
+                returnSt(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void param(ArrayDeque<imAtoken> x)
+    public void param(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
        // param-> typeSpec ID paramType
 
-        typeSpec(x);
+        typeSpec(x,y);
 
         if(!x.isEmpty())
         {
@@ -493,14 +558,14 @@ public class Parser
             {
                 x.pop();
 
-                paramType(x);
+                paramType(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void paramType(ArrayDeque<imAtoken> x)
+    public void paramType(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //paramType-> [ ] | empty
 
@@ -537,7 +602,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void parLoop(ArrayDeque<imAtoken> x)
+    public void parLoop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //parLoop-> , param parLoop | empty
 
@@ -549,16 +614,16 @@ public class Parser
             {
                 x.pop();
 
-                param(x);
+                param(x,y);
 
-                parLoop(x);
+                parLoop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void parameter(ArrayDeque<imAtoken> x)
+    public void parameter(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //parameter-> ID paramtype parLoop | empty
 
@@ -570,16 +635,16 @@ public class Parser
             {
                 x.pop();
 
-                paramType(x);
+                paramType(x,y);
 
-                parLoop(x);
+                parLoop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void expressionSt(ArrayDeque<imAtoken> x)
+    public void expressionSt(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //expressionSt-> expression ; | ;
 
@@ -593,16 +658,14 @@ public class Parser
             }
             else
             {
-                expression(x);
+                expression(x,y);
 
                 if(!x.isEmpty())
                 {
                     token = x.peek();
 
                     if(token.name.equals(";"))
-                    {
-                        
-
+                    {                        
                         x.pop();
                     }
                     else
@@ -622,7 +685,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void selectionSt(ArrayDeque<imAtoken> x)
+    public void selectionSt(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //selectionSt-> if ( expression ) statement selectFollow
 
@@ -632,8 +695,6 @@ public class Parser
 
             if(token.name.equals("if"))
             {
-                
-
                 x.pop();
 
                 if(!x.isEmpty())
@@ -642,11 +703,9 @@ public class Parser
 
                     if(token.name.equals("("))
                     {
-                        
-
                         x.pop();
 
-                        expression(x);
+                        expression(x,y);
 
                         if(!x.isEmpty())
                         {
@@ -654,13 +713,11 @@ public class Parser
 
                             if(token.name.equals(")"))
                             {
-                                
-
                                 x.pop();
 
-                                statement(x);
+                                statement(x,y);
 
-                                selectFollow(x);
+                                selectFollow(x,y);
                             }
                             else
                             {
@@ -696,7 +753,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void iterationSt(ArrayDeque<imAtoken> x)
+    public void iterationSt(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //iterationSt-> while ( expression ) statement
 
@@ -706,8 +763,6 @@ public class Parser
 
             if(token.name.equals("while"))
             {
-                
-
                 x.pop();
 
                 if(!x.isEmpty())
@@ -716,11 +771,9 @@ public class Parser
 
                     if(token.name.equals("("))
                     {
-                        
-
                         x.pop();
 
-                        expression(x);
+                        expression(x,y);
 
                         if(!x.isEmpty())
                         {
@@ -728,11 +781,9 @@ public class Parser
 
                             if(token.name.equals(")"))
                             {
-                                
-
                                 x.pop();
 
-                                statement(x);
+                                statement(x,y);
                             }
                             else
                             {
@@ -768,7 +819,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void returnSt(ArrayDeque<imAtoken> x)
+    public void returnSt(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //returnSt-> return retFollow
 
@@ -778,11 +829,9 @@ public class Parser
 
             if(token.name.equals("return"))
             {
-                
-
                 x.pop();
 
-                retFollow(x);
+                retFollow(x,y);
             }
             else
             {
@@ -799,7 +848,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void expression(ArrayDeque<imAtoken> x)
+    public void expression(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //expression-> ( expression ) expFollow | NUM expFollow | ID idFollow
 
@@ -808,12 +857,10 @@ public class Parser
             imAtoken token = x.peek();
 
             if(token.name.equals("("))
-            {
-                
-
+            {                
                 x.pop();
 
-                expression(x);
+                expression(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -821,10 +868,9 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
-                        
                         x.pop();
 
-                        expFollow(x);
+                        expFollow(x,y);
                     }
                     else
                     {
@@ -840,17 +886,19 @@ public class Parser
             }
             else if(token.type.equals("Int") || token.type.equals("Float"))
             {
-                NUM(x);
+                NUM(x,y);
 
-                expFollow(x);
+                expFollow(x,y);
             }
             else if(token.type.equals("ID"))
             {
-                
+                //capture ID for checking
+                FunName = token.name;
 
+                //remove token
                 x.pop();
 
-                idFollow(x);
+                idFollow(x,y);
             }
             else
             {
@@ -862,7 +910,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void selectFollow(ArrayDeque<imAtoken> x)
+    public void selectFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //selectFollow-> else statement | empty
 
@@ -872,18 +920,16 @@ public class Parser
 
             if(token.name.equals("else"))
             {
-                
-
                 x.pop();
 
-                statement(x);
+                statement(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void retFollow(ArrayDeque<imAtoken> x)
+    public void retFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //retFollow-> ; | expression ;
         if(!x.isEmpty())
@@ -892,13 +938,11 @@ public class Parser
 
             if(token.name.equals(";"))
             {
-                
-
                 x.pop();
             }
             else
             {
-                expression(x);
+                expression(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -906,8 +950,6 @@ public class Parser
 
                     if(token.name.equals(";"))
                     {
-                        
-
                         x.pop();
                     }
                     else
@@ -922,20 +964,20 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void expFollow(ArrayDeque<imAtoken> x)
+    public void expFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //expFollow-> termloop addExpLoop C
 
-        termLoop(x);
+        termLoop(x,y);
 
-        addExpLoop(x);
+        addExpLoop(x,y);
 
-        C(x);
+        C(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void termLoop(ArrayDeque<imAtoken> x)
+    public void termLoop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //termLoop-> mulop factor termLoop | empty
 
@@ -945,18 +987,18 @@ public class Parser
 
             if(token.name.equals("*") || token.name.equals("/"))
             {
-                mulop(x);
+                mulop(x,y);
 
-                factor(x);
+                factor(x,y);
 
-                termLoop(x);
+                termLoop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void C(ArrayDeque<imAtoken> x)
+    public void C(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //C-> relop addExp | empty
         if(!x.isEmpty())
@@ -965,16 +1007,16 @@ public class Parser
 
             if(token.name.equals("<=") || token.name.equals("<") || token.name.equals(">") || token.name.equals(">=") || token.name.equals("==") || token.name.equals("!="))
             {
-                relop(x);
+                relop(x,y);
 
-                addExp(x);
+                addExp(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void relop(ArrayDeque<imAtoken> x)
+    public void relop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //relop->  <= | <  | > | >= | == | !=
 
@@ -998,27 +1040,27 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void addExp(ArrayDeque<imAtoken> x)
+    public void addExp(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //addExp-> term addExpLoop
 
-        term(x);
+        term(x,y);
 
-        addExpLoop(x);
+        addExpLoop(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void term(ArrayDeque<imAtoken> x)
+    public void term(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
-        factor(x);
+        factor(x,y);
 
-        termLoop(x);
+        termLoop(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void addExpLoop(ArrayDeque<imAtoken> x)
+    public void addExpLoop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //addExpLoop-> addop term addExpLoop | empty
 
@@ -1032,16 +1074,16 @@ public class Parser
 
                 x.pop();
 
-                term(x);
+                term(x,y);
 
-                addExpLoop(x);
+                addExpLoop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void mulop(ArrayDeque<imAtoken> x)
+    public void mulop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         if(!x.isEmpty())
         {
@@ -1064,7 +1106,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void factor(ArrayDeque<imAtoken> x)
+    public void factor(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //factor-> (expression) | NUM | ID factorFollow
         if(!x.isEmpty())
@@ -1077,7 +1119,7 @@ public class Parser
 
                 x.pop();
 
-                expression(x);
+                expression(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -1103,7 +1145,7 @@ public class Parser
             }
             else if(token.type.equals("Int") || token.type.equals("Float"))
             {
-                NUM(x);
+                NUM(x,y);
             }
             else if(token.type.equals("ID"))
             {
@@ -1111,7 +1153,7 @@ public class Parser
 
                 x.pop();
 
-                factorFollow(x);
+                factorFollow(x,y);
             }
             else
             {
@@ -1123,7 +1165,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void factorFollow(ArrayDeque<imAtoken> x)
+    public void factorFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //factorFollow-> B | ( args)
         if(!x.isEmpty())
@@ -1136,7 +1178,7 @@ public class Parser
 
                 x.pop();
 
-                args(x);
+                args(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -1151,7 +1193,7 @@ public class Parser
             }
             else
             {
-                B(x);
+                B(x,y);
             }
 
         }
@@ -1159,9 +1201,11 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void idFollow(ArrayDeque<imAtoken> x)
+    public void idFollow(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //idFollow-> BM | ( args ) expFollow
+
+        Boolean corCall = true;
 
         if(!x.isEmpty())
         {
@@ -1169,10 +1213,9 @@ public class Parser
 
             if(token.name.equals("("))
             {
-
                 x.pop();
 
-                args(x);
+                args(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -1180,11 +1223,31 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
-                        
+                        for(int i = 0; i < ptype.size()-1; i++)
+                        {
+                            if(FunName.equals(y.get(i).name))
+                            {
+                                for(int l = 0; l < y.get(i).pType.size() - 1; l++)
+                                {
+                                    if(!ptype.get(l).equals(y.get(i).pType.get(l)))
+                                    {
+                                        System.out.println("function " + FunName + " not defined");
+                                        System.exit(0);
+                                    }
+                                }
+                            }
+                            else if(i == ptype.size() - 1)
+                            {
+                                System.out.println("function " + FunName + " not defined");
+                                System.exit(0);
+                            }
+
+                            System.out.println("Function " + FunName + " was called successfully");
+                        }
 
                         x.pop();
 
-                        expFollow(x);
+                        expFollow(x,y);
                     }
                     else
                     {
@@ -1200,16 +1263,16 @@ public class Parser
             }
             else
             {
-                B(x);
+                B(x, y);
 
-                M(x);
+                M(x, y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void args(ArrayDeque<imAtoken> x)
+    public void args(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //args-> argList | empty
 
@@ -1219,7 +1282,10 @@ public class Parser
 
             if (token.name.equals("(") || token.type.equals("Int") || token.type.equals("Float") || token.type.equals("ID"))
             {
-                argList(x);
+                //capture paramtype
+                ptype.add(token.type);
+
+                argList(x, y);
             }
 
         }
@@ -1227,18 +1293,18 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void argList(ArrayDeque<imAtoken> x)
+    public void argList(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //argList-> expression argListLoop
 
-        expression(x);
+        expression(x,y);
 
-        argsListLoop(x);
+        argsListLoop(x,y);
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void argsListLoop(ArrayDeque<imAtoken> x)
+    public void argsListLoop(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //argListLoop-> , expression argListLoop | empty
 
@@ -1248,20 +1314,18 @@ public class Parser
 
             if(token.name.equals(","))
             {
-                
-
                 x.pop();
 
-                expression(x);
+                expression(x,y);
 
-                argsListLoop(x);
+                argsListLoop(x,y);
             }
         }
     }
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void B(ArrayDeque<imAtoken> x)
+    public void B(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //B-> [ expression ] | empty
 
@@ -1275,7 +1339,7 @@ public class Parser
 
                 x.pop();
 
-                expression(x);
+                expression(x,y);
 
                 if(!x.isEmpty())
                 {
@@ -1305,7 +1369,7 @@ public class Parser
 
 //---------------------------------------------------------------------------------------------------------------
 
-    public void M(ArrayDeque<imAtoken> x)
+    public void M(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //M-> = expression | expFollow
 
@@ -1318,11 +1382,11 @@ public class Parser
 
                 x.pop();
 
-                expression(x);
+                expression(x,y);
             }
             else
             {
-                expFollow(x);
+                expFollow(x,y);
             }
         }
     }

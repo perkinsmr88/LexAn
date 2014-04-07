@@ -12,38 +12,23 @@ public class Functions
     ArrayList<String> pType = new ArrayList<String>();
     ArrayList<String> pName = new ArrayList<String>();
 
-    public Functions()
-    {
-        /* create an empty one */
-    }
-
-    public void loadName(String x)
+    public Functions(String x, String y, ArrayList<String> pt, ArrayList<String> pn, boolean isAr)
     {
         name = x;
+        type = y;
+        rType = y;
+
+        for(int i = 0; i < pt.size() - 1; i++)
+        {
+            pType.add(pt.get(i));
+        }
+
+        for(int i = 0; i < pt.size() - 1; i++)
+        {
+            pName.add(pn.get(i));
+        }
+
+        isArray.add(isAr);
     }
 
-    public void loadType(String x)
-    {
-        type = x;
-    }
-
-    public void loadIndex(boolean x)
-    {
-        isArray.add(x);
-    }
-
-    public void loadpType(String x)
-    {
-        pType.add(x);
-    }
-
-    public void loadpName(String x)
-    {
-        pName.add(x);
-    }
-
-    public void loadrType(String x)
-    {
-        rType = x;
-    }
 }
