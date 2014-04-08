@@ -18,14 +18,28 @@ public class Functions
         type = y;
         rType = y;
 
-        for(int i = 0; i < pt.size() - 1; i++)
+        if(pt.size() == 1)
         {
-            pType.add(pt.get(i));
+            pType.add(pt.get(0));
+        }
+        else
+        {
+            for (int i = 0; i < pt.size() - 1; i++)
+            {
+                pType.add(pt.get(i));
+            }
         }
 
-        for(int i = 0; i < pt.size() - 1; i++)
+        if(pn.size() == 1)
         {
-            pName.add(pn.get(i));
+            pName.add(pt.get(0));
+        }
+        else
+        {
+            for (int i = 0; i < pn.size() - 1; i++)
+            {
+                pName.add(pn.get(i));
+            }
         }
 
         isArray.add(isAr);

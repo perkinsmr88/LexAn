@@ -10,10 +10,17 @@ import java.util.ArrayList;
 
 public class Parser
 {
+
+    //stuff for func dec
+    ArrayList<Functions> functionList = new ArrayList<Functions>();
+    String name = "";
+    String type = "";
+    Boolean isAr = false;
+    ArrayList<String> pname = new ArrayList<String>();
+
     ArrayList<SymTable> decList = new ArrayList<SymTable>();
     ArrayList<String> ptype = new ArrayList<String>();
     String ID;
-    String type;
     int arraySize;
     boolean Array;
     String FunName;
@@ -126,9 +133,10 @@ public class Parser
     {
         //decfollow -> (params) compound | X
 
+        boolean duplicate = true;
+
         if(!x.isEmpty())
         {
-
             imAtoken token = x.peek();
 
             if(token.name.equals("("))
@@ -143,6 +151,56 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
+                        if(functionList.size() != 0)
+                        {
+                            //check for duplicate function
+                            for(int t = 0; t <= (functionList.size()-1); t++)
+                            {
+                                if(name.equals(functionList.get(t).name))
+                                {
+                                    for(int s = 0; s < (functionList.get(s).pType.size()-1); s++)
+                                    {
+                                        if(!ptype.get(s).equals(functionList.get(s).pType.get(s)))
+                                        {
+                                            duplicate = false;
+                                        }
+                                    }
+                                }
+                                else if (t == functionList.size()-1)
+                                {
+                                    duplicate = false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            duplicate = false;
+                        }
+
+                        if(!duplicate)
+                        {
+                            //create a Function
+                            Functions func = new Functions(ID, type, ptype, pname, isAr);
+
+                            //Send function to Function list
+                            functionList.add(func);
+
+                            System.out.println("function " + type + " " + ID + " found");
+
+                            //reset functions
+                            name = "";
+                            type = "";
+                            ptype.clear();
+                            pname.clear();
+                            isAr = false;
+
+                        }
+                        else
+                        {
+                            System.out.println("error function " + type + " " + ID + " already defined");
+                            System.exit(0);
+                        }
+
                         x.pop();
 
                         compound(x,y);
@@ -177,6 +235,10 @@ public class Parser
 
             if(token.name.equals("int") || token.name.equals("float"))
             {
+                //capture parameter type
+                ptype.add(token.name);
+
+                //remove token
                 x.pop();
 
                 if(!x.isEmpty())
@@ -185,6 +247,9 @@ public class Parser
 
                     if(token.type.equals("ID"))
                     {
+                        //capture param name
+                        pname.add(token.name);
+
                         x.pop();
 
                         paramType(x,y);
@@ -202,6 +267,10 @@ public class Parser
             {
                 if(token.name.equals("void"))
                 {
+                    //capture parameter type
+                    ptype.add(token.name);
+                    pname.add("");
+
                     x.pop();
 
                     parameter(x,y);
@@ -308,7 +377,6 @@ public class Parser
                         {
                             duplicate = false;
                         }
-
                     }
                 }
                 else
@@ -1200,8 +1268,6 @@ public class Parser
 
              if(token.name.equals("("))
             {
-                
-
                 x.pop();
 
                 args(x,y);
@@ -1249,21 +1315,14 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
-                        for(int i = 0; i < ptype.size()-1; i++)
+                        for(int i = 0; i < functionList.size() - 1; i++)
                         {
-                            if(FunName.equals(y.get(i).name))
+                             if(FunName.equals(functionList.get(i).name))
                             {
-                                for(int l = 0; l < y.get(i).pType.size() - 1; l++)
+                                if(!ptype.equals(functionList.get(i).pType))
                                 {
-                                    if(!ptype.get(l).equals(y.get(i).pType.get(l)))
-                                    {
-                                        System.out.println("function " + FunName + " not defined");
-                                        System.exit(0);
-                                    }
-                                    else if(l == y.get(i).pType.size()-1)
-                                    {
-                                        System.out.println("Function " + FunName + " was called successfully");
-                                    }
+                                    System.out.println("function " + FunName + " not defined");
+                                    System.exit(0);
                                 }
                             }
                             else if(i == ptype.size() - 1)
