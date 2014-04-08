@@ -11,6 +11,7 @@ public class SemAn
     ArrayList<Functions> functionList = new ArrayList<Functions>();
     String name = "";
     String type = "";
+    Boolean isAr = false;
     ArrayList<String> ptype = new ArrayList<String>();
     ArrayList<String> pname = new ArrayList<String>();
 
@@ -160,11 +161,20 @@ public class SemAn
                         if(!duplicate)
                         {
                             //create a Function
-                            Functions func = new Functions(name, type, ptype, pname, false);
+                            Functions func = new Functions(name, type, ptype, pname, isAr);
 
                             //Send function to Function list
                             functionList.add(func);
+
                             System.out.println("function " + type + " " + name + " found");
+
+                            //reset functions
+                            name = "";
+                            type = "";
+                            ptype.clear();
+                            pname.clear();
+                            isAr = false;
+
                         }
                         else
                         {
@@ -316,7 +326,6 @@ public class SemAn
 
         if(!x.isEmpty())
         {
-
             imAtoken token = x.peek();
 
             if(token.name.equals(";"))
@@ -405,7 +414,6 @@ public class SemAn
 
             if(token.name.equals("int") || token.name.equals("void") || token.name.equals("float"))
             {
-
                 typeSpec(x);
 
                 token = x.peek();
@@ -512,6 +520,10 @@ public class SemAn
 
             if(token.name.equals("["))
             {
+                //mark as array
+                isAr = true;
+
+                //remove token
                 x.pop();
 
                 if(!x.isEmpty())
@@ -634,8 +646,6 @@ public class SemAn
 
             if(token.name.equals("if"))
             {
-
-
                 x.pop();
 
                 if(!x.isEmpty())
@@ -644,8 +654,6 @@ public class SemAn
 
                     if(token.name.equals("("))
                     {
-
-
                         x.pop();
 
                         expression(x);
@@ -708,8 +716,6 @@ public class SemAn
 
             if(token.name.equals("while"))
             {
-
-
                 x.pop();
 
                 if(!x.isEmpty())
@@ -718,8 +724,6 @@ public class SemAn
 
                     if(token.name.equals("("))
                     {
-
-
                         x.pop();
 
                         expression(x);
@@ -730,8 +734,6 @@ public class SemAn
 
                             if(token.name.equals(")"))
                             {
-
-
                                 x.pop();
 
                                 statement(x);
@@ -780,8 +782,6 @@ public class SemAn
 
             if(token.name.equals("return"))
             {
-
-
                 x.pop();
 
                 retFollow(x);
@@ -811,8 +811,6 @@ public class SemAn
 
             if(token.name.equals("("))
             {
-
-
                 x.pop();
 
                 expression(x);
@@ -823,7 +821,6 @@ public class SemAn
 
                     if(token.name.equals(")"))
                     {
-
                         x.pop();
 
                         expFollow(x);
@@ -848,8 +845,6 @@ public class SemAn
             }
             else if(token.type.equals("ID"))
             {
-
-
                 x.pop();
 
                 idFollow(x);
@@ -874,8 +869,6 @@ public class SemAn
 
             if(token.name.equals("else"))
             {
-
-
                 x.pop();
 
                 statement(x);
@@ -894,8 +887,6 @@ public class SemAn
 
             if(token.name.equals(";"))
             {
-
-
                 x.pop();
             }
             else
@@ -986,8 +977,6 @@ public class SemAn
 
             if(token.name.equals("<=") || token.name.equals("<") || token.name.equals(">") || token.name.equals(">=") || token.name.equals("==") || token.name.equals("!="))
             {
-
-
                 x.pop();
             }
             else
@@ -1030,8 +1019,6 @@ public class SemAn
 
             if(token.name.equals("+") || token.name.equals("-"))
             {
-
-
                 x.pop();
 
                 term(x);
@@ -1051,10 +1038,7 @@ public class SemAn
 
             if(token.name.equals("*") || token.name.equals("/"))
             {
-
-
                 x.pop();
-
             }
             else
             {
@@ -1075,8 +1059,6 @@ public class SemAn
 
             if(token.name.equals("("))
             {
-
-
                 x.pop();
 
                 expression(x);
@@ -1087,8 +1069,6 @@ public class SemAn
 
                     if(token.name.equals(")"))
                     {
-
-
                         x.pop();
                     }
                     else
@@ -1109,8 +1089,6 @@ public class SemAn
             }
             else if(token.type.equals("ID"))
             {
-
-
                 x.pop();
 
                 factorFollow(x);
@@ -1134,8 +1112,6 @@ public class SemAn
 
             if(token.name.equals("("))
             {
-
-
                 x.pop();
 
                 args(x);
@@ -1171,7 +1147,6 @@ public class SemAn
 
             if(token.name.equals("("))
             {
-
                 x.pop();
 
                 args(x);
@@ -1182,8 +1157,6 @@ public class SemAn
 
                     if(token.name.equals(")"))
                     {
-
-
                         x.pop();
 
                         expFollow(x);
@@ -1250,8 +1223,6 @@ public class SemAn
 
             if(token.name.equals(","))
             {
-
-
                 x.pop();
 
                 expression(x);

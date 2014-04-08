@@ -18,6 +18,7 @@ public class Parser
     boolean Array;
     String FunName;
     String FunType;
+    int ifWhile = 0;
 
 
 //---------------------------------------------------------------------------------------------------------------
@@ -225,42 +226,50 @@ public class Parser
 
             if(token.name.equals("{"))
             {
-                //create a new symbol table
-                SymTable symTab = new SymTable();
-
-                //add table to List
-                decList.add(symTab);
-
-                //remove token
-                x.pop();
-
-                localDecs(x,y);
-
-                statementList(x,y);
-
-                if(!x.isEmpty())
+                if(ifWhile == 0)
                 {
-                    token = x.peek();
+                    //create a new symbol table
+                    SymTable symTab = new SymTable();
 
-                    if(token.name.equals("}"))
-                    {
-                        //drop current scope
-                        decList.remove(decList.size()-1);
+                    //add table to List
+                    decList.add(symTab);
+                }
+                    //remove token
+                    x.pop();
 
-                        //remove token
-                        x.pop();
+                    localDecs(x, y);
+
+                    statementList(x, y);
+
+                    if (!x.isEmpty()) {
+                        token = x.peek();
+
+                        if (token.name.equals("}"))
+                        {
+                            if(ifWhile > 0)
+                            {
+                                ifWhile--;
+                            }
+                            else if(ifWhile == 0)
+                            {
+                                //drop current scope
+                                decList.remove(decList.size() - 1);
+                            }
+
+                            //remove token
+                            x.pop();
+                        }
+                        else
+                        {
+                            System.out.println("Error5: expected \"}\" but found " + token.name + " on line " + token.line);
+                            System.exit(0);
+                        }
                     }
                     else
                     {
-                        System.out.println("Error5: expected \"}\" but found " + token.name + " on line "  + token.line);
+                        System.out.println("Error: Out of Tokens");
                         System.exit(0);
                     }
-                }
-                else
-                {
-                    System.out.println("Error: Out of Tokens");
-                    System.exit(0);
-                }
             }
             else
             {
@@ -280,6 +289,7 @@ public class Parser
     public void X(ArrayDeque<imAtoken> x, ArrayList<Functions> y)
     {
         //X-> ; | [NUM] ;
+        Array = false;
 
         boolean duplicate = true;
 
@@ -312,6 +322,7 @@ public class Parser
 
                     //add declaration to table
                     decList.get(decList.size()-1).insert(dec);
+
                     System.out.println(dec.type + " " + dec.ID + " found");
                 }
                 else
@@ -327,6 +338,10 @@ public class Parser
             {
                 if(token.name.equals("["))
                 {
+
+                    //declare it an array
+                    Array = true;
+
                     x.pop();
 
                     NUM(x,y);
@@ -371,7 +386,7 @@ public class Parser
 
                                         //add dec to table
                                         decList.get(decList.size()-1).insert(dec);
-                                        System.out.println(dec.type + "[] " + dec.ID + " found");
+                                        System.out.println(dec.type + "[" + arraySize + "] " + dec.ID + " found");
                                     }
                                     else
                                     {
@@ -421,17 +436,22 @@ public class Parser
         if(!x.isEmpty())
         {
             imAtoken token = x.peek();
-            
-            Array = false;
-            
+
              if(token.type.equals("Float") ||  token.type.equals("Int"))
              {
-                 //capture length of array
-                 arraySize = Integer.parseInt(token.name);
-                 Array = true;
-                 
-                 //remove token
-                 x.pop();
+                 if(Array && token.type.equals("Int"))
+                 {
+                     //capture length of array
+                     arraySize = Integer.parseInt(token.name);
+                 }
+                 else if(Array && token.type.equals("Float"))
+                 {
+                     System.out.println("Arrays can not be of size \"Float\"");
+                     System.exit(0);
+                 }
+
+                     //remove token
+                     x.pop();
              }
             else
              {
@@ -533,7 +553,7 @@ public class Parser
             }
             else if (token.name.equals("while"))
             {
-                iterationSt(x,y);
+                iterationSt(x, y);
             }
             else if (token.name.equals("return"))
             {
@@ -695,6 +715,9 @@ public class Parser
 
             if(token.name.equals("if"))
             {
+                //deny symbol table construction
+                ifWhile++;
+
                 x.pop();
 
                 if(!x.isEmpty())
@@ -763,6 +786,9 @@ public class Parser
 
             if(token.name.equals("while"))
             {
+                //deny symbol table construction
+                ifWhile++;
+
                 x.pop();
 
                 if(!x.isEmpty())
@@ -1234,6 +1260,10 @@ public class Parser
                                         System.out.println("function " + FunName + " not defined");
                                         System.exit(0);
                                     }
+                                    else if(l == y.get(i).pType.size()-1)
+                                    {
+                                        System.out.println("Function " + FunName + " was called successfully");
+                                    }
                                 }
                             }
                             else if(i == ptype.size() - 1)
@@ -1241,8 +1271,6 @@ public class Parser
                                 System.out.println("function " + FunName + " not defined");
                                 System.exit(0);
                             }
-
-                            System.out.println("Function " + FunName + " was called successfully");
                         }
 
                         x.pop();
