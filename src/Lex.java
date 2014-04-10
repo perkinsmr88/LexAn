@@ -23,7 +23,7 @@ public class Lex
     public ArrayDeque<imAtoken> run(String[] args)
     {
 
-        File file = new File("C:\\Users\\g00002046\\Documents\\GitHub\\LexAn\\src\\t1");
+        File file = new File("C:\\Users\\Drivenwanderer\\Documents\\GitHub\\LexAn\\src\\t1");
 
         try
         {
@@ -250,7 +250,7 @@ public class Lex
 
         if(intCheck && !analyzeMe.equals(""))
         {
-            imAtoken token = new imAtoken("Int", analyzeMe, depth, lineNum);
+            imAtoken token = new imAtoken("int", analyzeMe, depth, lineNum);
             stacker.add(token);
             analyzeMe = "";
         }
@@ -270,7 +270,7 @@ public class Lex
 
         if(isFloat) {
             //Success, output it.
-            imAtoken token = new imAtoken("Float", analyzeMe, depth,lineNum);
+            imAtoken token = new imAtoken("float", analyzeMe, depth,lineNum);
             stacker.add(token);
             analyzeMe = "";
         }

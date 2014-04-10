@@ -18,11 +18,12 @@ public class Parser
     Boolean isAr = false;
     ArrayList<String> pname = new ArrayList<String>();
 
+    //Holds the symbol tables which hold the declarations
     ArrayList<SymTable> decList = new ArrayList<SymTable>();
     ArrayList<String> ptype = new ArrayList<String>();
     String ID;
     int arraySize;
-    boolean Array;
+    boolean Array = true;
     String FunName;
     String FunType;
     int ifWhile = 0;
@@ -73,6 +74,23 @@ public class Parser
 
             if(token.type.equals("ID"))
             {
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    for(int v = 0; v < decList.get(i).stacker.size() - 1; v++)
+                    {
+                        if (decList.get(i).lookUp(v).ID.equals(token.name))
+                        {
+                            ptype.add(decList.get(i).lookUp(i).type);
+                            System.out.println("Variable " + token.name + " has been defined before");
+                        }
+                        else if (i == 0)
+                        {
+                            System.out.println("variable " + token.name + " is not defined");
+                            System.exit(0);
+                        }
+                    }
+                }
+
                 //Capture declaration ID
                 ID = token.name;
 
@@ -244,7 +262,7 @@ public class Parser
                 if(!x.isEmpty())
                 {
                     token = x.peek();
-
+System.out.println("you shouldnt see this -> " + token.name);
                     if(token.type.equals("ID"))
                     {
                         //capture param name
@@ -505,16 +523,16 @@ public class Parser
         {
             imAtoken token = x.peek();
 
-             if(token.type.equals("Float") ||  token.type.equals("Int"))
+             if(token.type.equals("float") ||  token.type.equals("int"))
              {
-                 if(Array && token.type.equals("Int"))
+                 if(Array && token.type.equals("int"))
                  {
                      //capture length of array
                      arraySize = Integer.parseInt(token.name);
                  }
-                 else if(Array && token.type.equals("Float"))
+                 else if(Array && token.type.equals("float"))
                  {
-                     System.out.println("Arrays can not be of size \"Float\"");
+                     System.out.println("Arrays can not be of size \"float\"");
                      System.exit(0);
                  }
 
@@ -523,7 +541,7 @@ public class Parser
              }
             else
              {
-                 System.out.println("Error10: expected an Int or a Float but found a " + token.type + " on line "  + token.line);
+                 System.out.println("Error10: expected an int or a float but found a " + token.type + " on line "  + token.line);
                  System.exit(0);
              }
         }
@@ -587,7 +605,7 @@ public class Parser
         {
             imAtoken token = x.peek();
 
-            if(token.name.equals("{") || token.name.equals("(") || token.name.equals("if") || token.name.equals("while") || token.name.equals("return") || token.type.equals("ID") || token.type.equals("Int") || token.type.equals("Float") || token.name.equals(";"))
+            if(token.name.equals("{") || token.name.equals("(") || token.name.equals("if") || token.name.equals("while") || token.name.equals("return") || token.type.equals("ID") || token.type.equals("int") || token.type.equals("float") || token.name.equals(";"))
             {
                 statement(x,y);
 
@@ -607,7 +625,7 @@ public class Parser
         {
             imAtoken token = x.peek();
 
-            if (token.name.equals("(") || token.type.equals("Int") || token.type.equals("Float") || token.type.equals("ID") || token.type.equals(";"))
+            if (token.name.equals("(") || token.type.equals("int") || token.type.equals("float") || token.type.equals("ID") || token.type.equals(";"))
             {
                 expressionSt(x,y);
             }
@@ -644,6 +662,20 @@ public class Parser
 
             if(token.type.equals("ID"))
             {
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    if(decList.get(i).lookUp(i).ID.equals(token.name))
+                    {
+                        ptype.add(decList.get(i).lookUp(i).type);
+                        System.out.println("variable " + token.name + " has been defined before");
+                    }
+                    else if (i == 0)
+                    {
+                        System.out.println("variable " + token.name + " is not defined");
+                        System.exit(0);
+                    }
+                }
+
                 x.pop();
 
                 paramType(x,y);
@@ -721,6 +753,23 @@ public class Parser
 
             if(token.type.equals("ID"))
             {
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    for(int v = 0; v < decList.get(i).stacker.size()-1; v++)
+                    {
+                        if (decList.get(i).lookUp(v).ID.equals(token.name))
+                        {
+                            ptype.add(decList.get(i).lookUp(i).type);
+                            System.out.println("Variable " + token.name + " has been defined before");
+                        }
+                        else if (i == 0)
+                        {
+                            System.out.println("variable " + token.name + " is not defined");
+                            System.exit(0);
+                        }
+                    }
+                }
+
                 x.pop();
 
                 paramType(x,y);
@@ -978,7 +1027,7 @@ public class Parser
                     System.exit(0);
                 }
             }
-            else if(token.type.equals("Int") || token.type.equals("Float"))
+            else if(token.type.equals("int") || token.type.equals("float"))
             {
                 NUM(x,y);
 
@@ -986,6 +1035,24 @@ public class Parser
             }
             else if(token.type.equals("ID"))
             {
+                //You need to be coding here
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    for(int v = 0; v < decList.get(i).stacker.size() - 1; v++)
+                    {
+                        if (decList.get(i).lookUp(v).ID.equals(token.name))
+                        {
+                            ptype.add(decList.get(i).lookUp(i).type);
+                            System.out.println("Variable " + token.name + " has been defined before");
+                        }
+                        else if (i == 0)
+                        {
+                            System.out.println("variable " + token.name + " is not defined");
+                            System.exit(0);
+                        }
+                    }
+                }
+
                 //capture ID for checking
                 FunName = token.name;
 
@@ -1120,8 +1187,6 @@ public class Parser
 
             if(token.name.equals("<=") || token.name.equals("<") || token.name.equals(">") || token.name.equals(">=") || token.name.equals("==") || token.name.equals("!="))
             {
-                
-
                 x.pop();
             }
             else
@@ -1164,8 +1229,6 @@ public class Parser
 
             if(token.name.equals("+") || token.name.equals("-"))
             {
-                
-
                 x.pop();
 
                 term(x,y);
@@ -1185,10 +1248,7 @@ public class Parser
 
             if(token.name.equals("*") || token.name.equals("/"))
             {
-                
-
                 x.pop();
-
             }
             else
             {
@@ -1209,8 +1269,6 @@ public class Parser
 
             if(token.name.equals("("))
             {
-                
-
                 x.pop();
 
                 expression(x,y);
@@ -1221,8 +1279,6 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
-                        
-
                         x.pop();
                     }
                     else
@@ -1237,13 +1293,31 @@ public class Parser
                     System.exit(0);
                 }
             }
-            else if(token.type.equals("Int") || token.type.equals("Float"))
+            else if(token.type.equals("int") || token.type.equals("float"))
             {
+                if(type.equals("int") || type.equals("float"))
+
+
                 NUM(x,y);
             }
             else if(token.type.equals("ID"))
             {
-                
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    for(int v = 0; v < decList.get(i).stacker.size()-1; v++)
+                    {
+                        if (decList.get(i).lookUp(v).ID.equals(token.name))
+                        {
+                            ptype.add(decList.get(i).lookUp(i).type);
+                            System.out.println("Variable " + token.name + " has been defined before");
+                        }
+                        else if (i == 0)
+                        {
+                            System.out.println("variable " + token.name + " is not defined");
+                            System.exit(0);
+                        }
+                    }
+                }
 
                 x.pop();
 
@@ -1278,7 +1352,6 @@ public class Parser
 
                    if(token.name.equals(")"))
                    {
-                        
                         x.pop();
                    }
                 }
@@ -1315,23 +1388,52 @@ public class Parser
 
                     if(token.name.equals(")"))
                     {
-                        for(int i = 0; i < functionList.size() - 1; i++)
+                        if(functionList.size() > 1)
                         {
-                             if(FunName.equals(functionList.get(i).name))
+                            for (int i = 0; i < functionList.size() - 1; i++)
                             {
-                                if(!ptype.equals(functionList.get(i).pType))
+                                if (FunName.equals(functionList.get(i).name))
+                                {
+                                    if (!ptype.equals(functionList.get(i).pType))
+                                    {
+                                        System.out.println("function " + FunName + " not defined");
+                                        System.exit(0);
+                                    }
+                                    else
+                                    {
+                                        System.out.println("function " + FunName + " successfully called");
+                                    }
+                                }
+                                else if (i == ptype.size() - 1)
                                 {
                                     System.out.println("function " + FunName + " not defined");
                                     System.exit(0);
                                 }
                             }
-                            else if(i == ptype.size() - 1)
+                        }
+                        else
+                        {
+                            for(int r = 0; r <= 1; r++)
                             {
-                                System.out.println("function " + FunName + " not defined");
-                                System.exit(0);
+                                if (FunName.equals(functionList.get(r).name))
+                                {
+                                    if (!ptype.equals(functionList.get(r).pType))
+                                    {
+                                        System.out.println("function " + FunName + " not defined");
+                                        System.exit(0);
+                                    }
+                                    else
+                                    {
+                                        System.out.println(" function " + FunName + " successfully called");
+                                    }
+                                }
+                                else
+                                {
+                                    System.out.println("function " + FunName + " not defined");
+                                    System.exit(0);
+                                }
                             }
                         }
-
                         x.pop();
 
                         expFollow(x,y);
@@ -1367,10 +1469,33 @@ public class Parser
         {
             imAtoken token = x.peek();
 
-            if (token.name.equals("(") || token.type.equals("Int") || token.type.equals("Float") || token.type.equals("ID"))
+            if (token.name.equals("(") || token.type.equals("int") || token.type.equals("float") || token.type.equals("ID"))
             {
                 //capture paramtype
-                ptype.add(token.type);
+                if(token.type.equals("ID"))
+                {
+                    for(int i = decList.size() - 1; i > 0; i--)
+                    {
+                        for(int v = 0; v < decList.get(i).stacker.size()-1; v++)
+                        {
+                            if (decList.get(i).lookUp(v).ID.equals(token.name))
+                            {
+                                ptype.add(decList.get(i).lookUp(i).type);
+                                System.out.println("Variable " + token.name + " has been defined before");
+                            }
+                            else if (i == 0)
+                            {
+                                System.out.println("variable " + token.name + " is not defined");
+                                System.exit(0);
+                            }
+                        }
+                    }
+
+                }
+                else if(!token.name.equals("("))
+                {
+                    ptype.add(token.type);
+                }
 
                 argList(x, y);
             }
@@ -1422,7 +1547,28 @@ public class Parser
 
             if(token.name.equals("["))
             {
-                
+                //flag variable as an array
+                Array = true;
+
+                for(int i = decList.size() - 1; i > 0; i--)
+                {
+                    if(decList.get(i).lookUp(i).ID.equals(token.name))
+                    {
+                        for(int v = 0; v < decList.get(i).stacker.size()-1; v++)
+                        {
+                            if(decList.get(i).stacker.get(v).Array == Array && decList.get(i).stacker.get(v).ID.equals(name))
+                            {
+                                ptype.add(decList.get(i).lookUp(v).type);
+                                System.out.println("variable " + name + "is secure");
+                            }
+                        }
+                    }
+                    else if (i == 0)
+                    {
+                        System.out.println("variable " + name + " is not defined");
+                        System.exit(0);
+                    }
+                }
 
                 x.pop();
 
@@ -1434,7 +1580,8 @@ public class Parser
 
                     if(token.name.equals("]"))
                     {
-                        
+                        //reset array parameter
+                        Array = false;
 
                         x.pop();
                     }
@@ -1466,7 +1613,7 @@ public class Parser
 
             if(token.name.equals("="))
             {
-
+                //need to compare each side
                 x.pop();
 
                 expression(x,y);
